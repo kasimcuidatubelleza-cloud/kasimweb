@@ -5,11 +5,11 @@ const HeroSection = () => {
   return (
     <section id="inicio" className="relative min-h-screen flex items-center overflow-hidden">
       {/* Background video (YouTube Embed) */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden bg-black">
         <iframe
           src="https://www.youtube.com/embed/0_VLZs8dWjo?autoplay=1&mute=1&loop=1&playlist=0_VLZs8dWjo&controls=0&showinfo=0&rel=0&playsinline=1&iv_load_policy=3&modestbranding=1&enablejsapi=1"
           title="Background Video"
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 min-w-full min-h-full w-[177.77vh] h-[56.25vw] aspect-video object-cover scale-[1.3]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vh] h-[177.77vh] aspect-[9/16] object-cover scale-[2.5]"
           allow="autoplay; encrypted-media"
           frameBorder="0"
         />
