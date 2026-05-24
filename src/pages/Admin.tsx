@@ -634,6 +634,20 @@ const AppointmentList = ({ apps, onUpdateStatus, onViewImage }: any) => {
                           {p.payment_method === 'cash' ? 'EFECTIVO' : 
                           p.payment_method === 'mercadopago' ? 'MERCADO PAGO' : 'TRANSFERENCIA'} - {p.status}
                         </span>
+
+                        <span className="text-[10px] font-bold px-2 py-1 rounded-lg border bg-muted/60 border-border text-foreground tracking-tighter">
+                          Abonó: ${p.amount} / Total: ${app.services?.price || 0}
+                        </span>
+                        
+                        {(app.services?.price || 0) - p.amount > 0 ? (
+                          <span className="text-[10px] font-bold px-2 py-1 rounded-lg border bg-amber-50 border-amber-200 text-amber-600 tracking-tighter animate-pulse">
+                            Debe: ${app.services.price - p.amount}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold px-2 py-1 rounded-lg border bg-emerald-50 border-emerald-200 text-emerald-600 tracking-tighter">
+                            Total Pagado
+                          </span>
+                        )}
                         
                         {/* Comprobante de pago (cliente) */}
                         {p.evidence_url && (

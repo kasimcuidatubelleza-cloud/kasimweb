@@ -47,6 +47,16 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (service) {
+      if (!service.deposit_amount || service.deposit_amount <= 0 || service.deposit_amount >= service.price) {
+        setPaymentType('full');
+      } else {
+        setPaymentType('deposit');
+      }
+    }
+  }, [service]);
+
   const fetchBusinessHours = async () => {
     const { data } = await supabase.from('business_hours').select('*');
     if (data) setBusinessHours(data);
@@ -175,12 +185,16 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
         evidenceUrl = fileName;
       }
 
+      const notesDetails = paymentType === 'full' 
+        ? `Pago: ${paymentMethod === 'cash' ? 'Efectivo' : paymentMethod === 'mercadopago' ? 'Mercado Pago' : 'Transferencia'} (Total Completo - $${service.price})`
+        : `Pago: ${paymentMethod === 'cash' ? 'Efectivo' : paymentMethod === 'mercadopago' ? 'Mercado Pago' : 'Transferencia'} (Seña de $${service.deposit_amount}). Debe: $${service.price - service.deposit_amount}`;
+
       const { data: appointment, error: appError } = await supabase.from('appointments').insert({
         client_id: session.user.id,
         service_id: service.id,
         start_time: startTime.toISOString(),
         status: 'pending_confirmation',
-        notes: `Pago: ${paymentMethod}`
+        notes: notesDetails
       }).select().single();
       if (appError) throw appError;
 
@@ -283,11 +297,58 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
                     </div>
                   ) : (
                     <div className="space-y-8">
-                      {/* ... Sección de Pago (Se mantiene igual) ... */}
-                      <div className="grid grid-cols-3 gap-3">
-                        <PaymentBtn active={paymentMethod === 'cash'} icon={<Banknote />} label="Efectivo" onClick={() => setPaymentMethod('cash')} />
-                        <PaymentBtn active={paymentMethod === 'transfer'} icon={<CreditCard />} label="Transf." onClick={() => setPaymentMethod('transfer')} />
-                        <PaymentBtn active={paymentMethod === 'mercadopago'} icon={<ImageIcon className="w-5 h-5" />} label="MP" onClick={() => setPaymentMethod('mercadopago')} />
+                      {/* Selección de Tipo de Pago (Seña vs Completo) */}
+                      {service && service.deposit_amount > 0 && service.deposit_amount < service.price && (
+                        <div className="space-y-3">
+                          <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Modalidad de Reserva</label>
+                          <div className="grid grid-cols-2 gap-3">
+                            <button
+                              type="button"
+                              onClick={() => setPaymentType('deposit')}
+                              className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 transition-all ${
+                                paymentType === 'deposit' 
+                                  ? 'border-primary bg-primary/5 shadow-lg scale-105' 
+                                  : 'border-border grayscale'
+                              }`}
+                            >
+                              <span className={`text-sm font-bold ${paymentType === 'deposit' ? 'text-primary' : 'text-muted-foreground'}`}>Pagar Seña</span>
+                              <span className="text-xs text-muted-foreground">${service.deposit_amount}</span>
+                            </button>
+                            
+                            <button
+                              type="button"
+                              onClick={() => setPaymentType('full')}
+                              className={`p-4 rounded-2xl border-2 flex flex-col items-center gap-1.5 transition-all ${
+                                paymentType === 'full' 
+                                  ? 'border-primary bg-primary/5 shadow-lg scale-105' 
+                                  : 'border-border grayscale'
+                              }`}
+                            >
+                              <span className={`text-sm font-bold ${paymentType === 'full' ? 'text-primary' : 'text-muted-foreground'}`}>Pago Completo</span>
+                              <span className="text-xs text-muted-foreground">${service.price}</span>
+                            </button>
+                          </div>
+                          
+                          {/* Info de saldo pendiente */}
+                          {paymentType === 'deposit' ? (
+                            <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 p-4 rounded-2xl font-medium mt-2">
+                              Abonarás <strong>${service.deposit_amount}</strong> hoy para reservar tu turno. El saldo restante de <strong>${service.price - service.deposit_amount}</strong> lo pagarás en el salón el día de tu cita.
+                            </p>
+                          ) : (
+                            <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 p-4 rounded-2xl font-medium mt-2">
+                              Abonarás el total de <strong>${service.price}</strong> hoy. No tendrás saldos pendientes de pago el día de tu cita.
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="space-y-3">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Método de Pago</label>
+                        <div className="grid grid-cols-3 gap-3">
+                          <PaymentBtn active={paymentMethod === 'cash'} icon={<Banknote />} label="Efectivo" onClick={() => setPaymentMethod('cash')} />
+                          <PaymentBtn active={paymentMethod === 'transfer'} icon={<CreditCard />} label="Transf." onClick={() => setPaymentMethod('transfer')} />
+                          <PaymentBtn active={paymentMethod === 'mercadopago'} icon={<ImageIcon className="w-5 h-5" />} label="MP" onClick={() => setPaymentMethod('mercadopago')} />
+                        </div>
                       </div>
                       
                       {paymentMethod !== 'cash' && (
