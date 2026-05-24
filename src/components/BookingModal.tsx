@@ -49,11 +49,7 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
 
   useEffect(() => {
     if (service) {
-      if (!service.deposit_amount || service.deposit_amount <= 0 || service.deposit_amount >= service.price) {
-        setPaymentType('full');
-      } else {
-        setPaymentType('deposit');
-      }
+      setPaymentType('full');
     }
   }, [service]);
 
