@@ -23,13 +23,13 @@ const AboutSection = () => {
               Quiénes Somos
             </p>
             <h2 className="text-3xl md:text-4xl font-display font-bold leading-tight">
-              Soy Ana Karina Campos
+              Somos Ana Karina Campos y Fernando
             </h2>
             <p className="text-muted-foreground mt-6 leading-relaxed">
-              Me dedico hace 22 años a los servicios del cuidado de la belleza. 
-              Esto me llevó a la misión de crear <strong className="text-foreground">Kasim</strong>, 
-              un proyecto dedicado a cuidar la salud y la belleza de quienes buscan 
-              restaurar y reconciliarse con su cuerpo.
+              Somos 2 jóvenes que se atrevieron a creer que llega el tiempo del respeto al cuerpo y resaltar la belleza de forma natural.
+            </p>
+            <p className="text-muted-foreground mt-4 leading-relaxed">
+              Ana se dedica hace 22 años a los servicios del cuidado de la belleza. Esto nos llevó a la misión de crear <strong className="text-foreground">Kasim</strong>, un proyecto dedicado a cuidar la salud y la belleza de quienes buscan restaurar y reconciliarse con su cuerpo.
             </p>
             <p className="text-muted-foreground mt-4 leading-relaxed">
               Nuestro valor diferencial es unir la salud y la belleza de manera 
@@ -37,7 +37,7 @@ const AboutSection = () => {
               de productos de primera calidad.
             </p>
             <p className="text-muted-foreground mt-4 leading-relaxed">
-              Ofrecemos nuestros servicios en nuestras instalaciones, a domicilio y para empresas.
+              Ofrecemos nuestros servicios en nuestras instalaciones, a domicilio y a comunidades y empresas.
             </p>
           </motion.div>
 
@@ -46,7 +46,7 @@ const AboutSection = () => {
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="grid grid-cols-2 gap-4"
+            className="grid grid-cols-1 sm:grid-cols-2 gap-4"
           >
             {features.map((f, i) => (
               <motion.div

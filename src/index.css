@@ -6,41 +6,41 @@
 
 @layer base {
   :root {
-    --background: 30 25% 97%;
+    --background: 0 0% 100%;
     --foreground: 20 15% 15%;
 
-    --card: 30 20% 95%;
+    --card: 0 0% 100%;
     --card-foreground: 20 15% 15%;
 
-    --popover: 30 25% 97%;
+    --popover: 0 0% 100%;
     --popover-foreground: 20 15% 15%;
 
-    --primary: 15 60% 65%;
-    --primary-foreground: 30 25% 97%;
+    --primary: 215 40% 35%; /* Deep slate/navy blue */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 15% 90%;
-    --secondary-foreground: 20 15% 25%;
+    --secondary: 215 10% 96%;
+    --secondary-foreground: 215 30% 25%;
 
-    --muted: 30 12% 92%;
-    --muted-foreground: 20 8% 50%;
+    --muted: 215 10% 96%;
+    --muted-foreground: 215 15% 50%;
 
-    --accent: 20 40% 75%;
-    --accent-foreground: 20 15% 15%;
+    --accent: 215 20% 85%;
+    --accent-foreground: 215 40% 15%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 25 15% 88%;
-    --input: 25 15% 88%;
-    --ring: 15 60% 65%;
+    --border: 215 15% 88%;
+    --input: 215 15% 88%;
+    --ring: 215 40% 35%;
 
     --radius: 1rem;
 
-    --rose-gold: 15 55% 70%;
-    --cream: 35 30% 95%;
-    --nude: 20 20% 85%;
-    --blush: 10 45% 80%;
-    --warm-dark: 20 15% 15%;
+    --rose-gold: 215 30% 60%; /* Re-used as accent blue */
+    --cream: 215 15% 95%; /* Cool off-white */
+    --nude: 215 15% 90%;
+    --blush: 215 20% 85%;
+    --warm-dark: 215 40% 15%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Project secrets & MCP metadata
+.env
+mcp_data_memory.md
+mcp_tools.json
+mcp_tools_list.json
+
+# Large media files
+public/video.mp4

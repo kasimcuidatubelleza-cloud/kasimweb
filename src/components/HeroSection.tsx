@@ -4,16 +4,18 @@ import heroImage from "@/assets/hero-nails.jpg";
 const HeroSection = () => {
   return (
     <section id="inicio" className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Background image */}
+      {/* Background video */}
       <div className="absolute inset-0">
-        <img
-          src={heroImage}
-          alt="Kasim Salón de Uñas y Estética en Palermo"
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
           className="w-full h-full object-cover"
-          width={1920}
-          height={1080}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-foreground/70 via-foreground/50 to-foreground/20" />
+        >
+          <source src="/video.mp4" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-black/50" />
       </div>
 
       <div className="container relative z-10 pt-20">
