@@ -118,39 +118,30 @@ const Mikve = () => {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
-                    className="bg-background border rounded-[24px] md:rounded-[32px] p-6 md:p-8 text-center hover:shadow-xl transition-all group flex flex-col h-full"
+                    className="bg-background border rounded-[20px] md:rounded-[28px] p-5 md:p-6 text-center hover:shadow-xl transition-all group flex flex-col h-full"
                   >
-                    <div className="relative w-24 h-24 mx-auto mb-6">
+                    <div className="relative w-20 h-20 mx-auto mb-4">
                       {/* Ícono Principal */}
-                      <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
-                        <Icon className="w-10 h-10" />
+                      <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-500">
+                        <Icon className="w-8 h-8" />
                       </div>
                       
                       {/* Foto Pequeña (si existe) */}
                       {service.image_url && (
-                        <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full overflow-hidden shadow-lg ring-4 ring-background z-10 group-hover:scale-125 transition-transform duration-500 bg-muted">
+                        <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full overflow-hidden shadow-lg ring-4 ring-background z-10 group-hover:scale-125 transition-transform duration-500 bg-muted">
                           <img src={service.image_url} alt={service.name} className="w-full h-full object-cover" />
                         </div>
                       )}
                     </div>
                     
-                    <h3 className="text-2xl font-display font-bold mb-1">{service.name}</h3>
-                    <p className="text-primary font-display italic text-sm mb-4">{getFaseSub(service.name)}</p>
-                    <p className="text-muted-foreground leading-relaxed flex-grow">{service.description}</p>
+                    <h3 className="text-xl md:text-2xl font-display font-bold mb-1">{service.name}</h3>
+                    <p className="text-primary font-display italic text-xs mb-3">{getFaseSub(service.name)}</p>
+                    <p className="text-muted-foreground leading-relaxed text-sm flex-grow">{service.description}</p>
                     
-                    <div className="mt-6 pt-6 border-t flex flex-col gap-3">
-                      <div className="text-xl font-bold mb-2">${service.price}</div>
-                      <Button onClick={() => handleBook(service)} className="w-full rounded-2xl gap-2 font-bold py-6">
-                        <CalendarDays className="w-5 h-5" /> Agendar y Pagar
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="w-full rounded-2xl gap-2 text-primary"
-                        onClick={() => {
-                          window.open(`https://wa.me/5491127485584?text=${encodeURIComponent('Hola Kasim, quiero consultar sobre el servicio: ' + service.name)}`, '_blank');
-                        }}
-                      >
-                        <MessageCircle className="w-4 h-4" /> Consultar por WhatsApp
+                    <div className="mt-4 pt-4 border-t flex flex-col gap-2">
+                      <div className="text-lg font-bold mb-1">${service.price}</div>
+                      <Button onClick={() => handleBook(service)} className="w-full rounded-xl gap-2 font-bold py-5">
+                        <CalendarDays className="w-4 h-4" /> Agendar y Pagar
                       </Button>
                     </div>
                   </motion.div>
