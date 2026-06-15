@@ -62,7 +62,7 @@ const HeroSection = () => {
             }, 1000);
           }}
         />
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-black/0 md:bg-black/50" />
       </div>
 
       <div className="container relative z-10 py-10 md:py-20 flex-grow">
