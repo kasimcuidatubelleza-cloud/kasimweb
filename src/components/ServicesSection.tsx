@@ -70,10 +70,10 @@ const ServicesSection = () => {
             Nuestros Servicios
           </p>
           <h2 className="text-3xl md:text-5xl font-display font-bold">
-            Elige tu <span className="italic">tratamiento</span>
+            Agendá tu turno de forma <span className="italic">rápida y segura</span>
           </h2>
           <p className="text-muted-foreground mt-4 max-w-lg mx-auto">
-            Seleccioná el servicio que necesitás, elegí fecha y hora, y reservá tu turno en línea de forma rápida y segura.
+            Seleccioná el tratamiento que necesitás, elegí la fecha y hora que prefieras. Reservá tu lugar en línea con solo un clic.
           </p>
         </motion.div>
 
@@ -95,6 +95,7 @@ const ServicesSection = () => {
                   alt={service.name}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  style={{ objectPosition: service.image_position || '50% 50%' }}
                 />
               </div>
               <div className="p-5">

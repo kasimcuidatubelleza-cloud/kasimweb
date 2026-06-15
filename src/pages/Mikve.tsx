@@ -9,6 +9,32 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase, Service } from "@/lib/supabase";
 import BookingModal from "@/components/BookingModal";
 
+const getFaseIcon = (name: string) => {
+  if (name.toLowerCase().includes('esencial')) return Leaf;
+  if (name.toLowerCase().includes('premium')) return Crown;
+  return Flower;
+};
+
+const getFaseSub = (name: string) => {
+  if (name.toLowerCase().includes('esencial')) return "Preparación Pura";
+  if (name.toLowerCase().includes('premium')) return "A Domicilio";
+  return "Cuidado Integral";
+};
+
+const getFaseDescription = (name: string, fallback: string) => {
+  const lower = name.toLowerCase();
+  if (lower.includes('esencial')) {
+    return 'Manos, pies y control halájico final. Cuidamos cada detalle para que llegues a la mikve sin jatzitzá — limpia, prolija y lista.';
+  }
+  if (lower.includes('completa')) {
+    return 'Preparamos tu piel con una exfoliación suave y el cuidado esencial que merece, para renovar su brillo natural. Antes y después de la mikve.';
+  }
+  if (lower.includes('premium')) {
+    return 'Servicio personalizado en la intimidad de tu hogar. Disfruta de una atención exclusiva con la frecuencia que tú elijas: mensual o quincenal.';
+  }
+  return fallback;
+};
+
 const Mikve = () => {
   const [formStatus, setFormStatus] = useState<"idle" | "submitted">("idle");
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -37,18 +63,6 @@ const Mikve = () => {
     const fase = formData.get("fase");
     const msj = `Hola Kasim, soy ${nombre}. Me gustaría información sobre la preparación para Mikve (Fase: ${fase}).`;
     window.open(`https://wa.me/5491127485584?text=${encodeURIComponent(msj)}`, '_blank');
-  };
-
-  const getFaseIcon = (name: string) => {
-    if (name.toLowerCase().includes('esencial')) return Leaf;
-    if (name.toLowerCase().includes('premium')) return Crown;
-    return Flower;
-  };
-
-  const getFaseSub = (name: string) => {
-    if (name.toLowerCase().includes('esencial')) return "preparación pura";
-    if (name.toLowerCase().includes('premium')) return "a domicilio";
-    return "cuidado integral";
   };
 
   const handleBook = (service: Service) => {
@@ -84,15 +98,21 @@ const Mikve = () => {
         {/* ABOUT */}
         <section className="py-12 md:py-20 bg-muted/30">
           <div className="container max-w-4xl text-center">
-            <p className="text-xs font-bold tracking-[0.3em] uppercase text-primary mb-4">Sobre Kasim</p>
-            <h2 className="text-3xl md:text-5xl font-display font-bold mb-8">Un momento <span className="italic text-primary">solo tuyo</span></h2>
+            <p className="text-xs font-bold tracking-[0.3em] uppercase text-primary mb-4">SOBRE KASIM</p>
+            <h2 className="text-3xl md:text-5xl font-display font-bold mb-8">Un momento <span className="italic text-primary">solo tuyo.</span></h2>
             
             <div className="space-y-6 text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
               <p>
-                Somos Ana Karina y Fernando, 2 jóvenes que se atrevieron a creer que llega el tiempo del respeto al cuerpo y resaltar la belleza de forma natural. Con esta visión, Kasim nace para acompañar a la mujer judía en su preparación previa a la <strong className="text-foreground font-bold">mikve</strong> — ese instante íntimo y sagrado donde cuerpo y alma se reencuentran.
+                Somos Ana Karina Campos y Fernando Higa, dos jóvenes profesionales que nos atrevimos a creer en un concepto diferente: es tiempo de respetar el cuerpo y cuidar de forma natural la belleza.
               </p>
               <p>
-                Más que un servicio de cuidado, es <span className="font-display italic text-primary font-semibold">un ritual de presencia</span>: un espacio respetuoso, privado y alineado con las necesidades de la preparación, pensado para que llegues serena, cuidada y completamente lista.
+                Con esta visión nace <strong className="brand-name text-foreground">Kasim</strong>, un espacio dedicado a todas las mujeres de la comunidad judía en su preparación previa a la Mikve.
+              </p>
+              <p>
+                Más que un servicio de cuidado, es <span className="font-display italic text-primary font-semibold">un ritual de presencia</span>: un espacio respetuoso, íntimo, privado y sagrado alineado con las necesidades de la preparación para que llegues serena, cuidada y completamente lista.
+              </p>
+              <p className="font-display italic text-primary font-semibold text-lg mt-6">
+                En Kasim, preparamos el cuerpo con la misma delicadeza que se prepara el alma.
               </p>
             </div>
           </div>
@@ -102,8 +122,11 @@ const Mikve = () => {
         <section className="py-12 md:py-24">
           <div className="container max-w-6xl">
             <div className="text-center mb-16">
-              <p className="text-xs font-bold tracking-[0.3em] uppercase text-primary mb-4">Tres Caminos</p>
-              <h2 className="text-3xl md:text-5xl font-display font-bold">Encuentra <span className="italic text-primary">tu ritmo</span></h2>
+              <p className="text-xs font-bold tracking-[0.3em] uppercase text-primary mb-4">TRES CAMINOS</p>
+              <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">Encuentra <span className="italic text-primary">tu ritmo</span></h2>
+              <p className="text-muted-foreground text-sm max-w-md mx-auto leading-relaxed">
+                Tú eliges el recorrido, nosotros te acompañamos en el proceso. Diseñado exclusivamente para ti.
+              </p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
@@ -129,14 +152,14 @@ const Mikve = () => {
                       {/* Foto Pequeña (si existe) */}
                       {service.image_url && (
                         <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full overflow-hidden shadow-lg ring-4 ring-background z-10 group-hover:scale-125 transition-transform duration-500 bg-muted">
-                          <img src={service.image_url} alt={service.name} className="w-full h-full object-cover" />
+                          <img src={service.image_url} alt={service.name} className="w-full h-full object-cover" style={{ objectPosition: service.image_position || '50% 50%' }} />
                         </div>
                       )}
                     </div>
                     
                     <h3 className="text-xl md:text-2xl font-display font-bold mb-1">{service.name}</h3>
                     <p className="text-primary font-display italic text-xs mb-3">{getFaseSub(service.name)}</p>
-                    <p className="text-muted-foreground leading-relaxed text-sm flex-grow">{service.description}</p>
+                    <p className="text-muted-foreground leading-relaxed text-sm flex-grow">{getFaseDescription(service.name, service.description)}</p>
                     
                     <div className="mt-4 pt-4 border-t flex flex-col gap-2">
                       <div className="text-lg font-bold mb-1">${service.price}</div>
@@ -156,14 +179,14 @@ const Mikve = () => {
           <div className="container max-w-6xl">
             <div className="text-center mb-16">
               <p className="text-xs font-bold tracking-[0.3em] uppercase text-primary mb-4">El cuidado, en detalle</p>
-              <h2 className="text-3xl md:text-5xl font-display font-bold">Cada paso, con <span className="italic text-primary">kavaná</span></h2>
+              <h2 className="text-3xl md:text-5xl font-display font-bold">Cada paso, con <span className="italic text-primary">Kavaná</span></h2>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
               {[
-                { title: "Manos", items: ["Uñas cortas y limadas", "Limpieza profunda bajo la uña", "Sin esmalte ni residuos", "Cutículas prolijas", "Piel libre de cremas o aceites"] },
-                { title: "Pies", items: ["Uñas cortas y limpias", "Talones suavizados", "Entre dedos limpio y seco", "Sin durezas ni piel suelta", "Sin residuos visibles"] },
-                { title: "Control Final", items: ["Sin שום jatzitzá (barrera)", "Piel íntegra, sin lastimar", "Sensación limpia y natural", "Aval halájico de cada detalle", "Tranquilidad antes de la mikve"] },
+                { title: "Manos", items: ["Uñas cortas y limadas.", "Limpieza profunda debajo de las uñas.", "Sin esmalte ni residuos.", "Cutículas prolijas.", "Piel libre de cremas o aceites."] },
+                { title: "Pies", items: ["Uñas cortas y limpias.", "Talones suavizados.", "Entre los dedos, limpio y seco.", "Sin durezas ni piel suelta.", "Sin residuos visibles."] },
+                { title: "Control Final", items: ["Sin שום jatzitzá (barrera).", "Piel íntegra, sin lesiones.", "Sensación limpia y natural.", "Aval halájico en cada detalle.", "Tranquilidad antes de la mikve."] },
               ].map((col, i) => (
                 <div key={i} className="bg-background rounded-3xl p-8 border-t-4 border-primary shadow-sm">
                   <h3 className="text-xl font-display font-bold text-primary mb-6 pb-4 border-b">{col.title}</h3>
@@ -186,11 +209,9 @@ const Mikve = () => {
           <div className="container max-w-3xl">
             <span className="text-6xl text-primary/30 font-display leading-none">"</span>
             <blockquote className="text-2xl md:text-4xl font-display italic font-medium leading-relaxed my-8 text-foreground">
-              No es solo un servicio.<br/>
-              Es seguridad, sensación de cuidado real,<br/>
-              una experiencia preparada para acompañarte.
+              Kasim es seguridad, sensación de cuidado real y una experiencia preparada para acompañarte.
             </blockquote>
-            <p className="text-xs font-bold tracking-[0.3em] uppercase text-primary">— la esencia de Kasim</p>
+            <p className="text-xs font-bold tracking-[0.3em] uppercase text-primary">— NUESTRA ESENCIA</p>
           </div>
         </section>
 
@@ -198,17 +219,17 @@ const Mikve = () => {
         <section className="py-12 md:py-24 bg-muted/30" id="agendar">
           <div className="container max-w-3xl">
             <div className="text-center mb-12">
-              <p className="text-xs font-bold tracking-[0.3em] uppercase text-primary mb-4">Reservar tu momento</p>
+              <p className="text-xs font-bold tracking-[0.3em] uppercase text-primary mb-4">RESERVA TU MOMENTO</p>
               <h2 className="text-3xl md:text-5xl font-display font-bold mb-6">Agendar mi <span className="italic text-primary">preparación</span></h2>
-              <p className="text-muted-foreground max-w-xl mx-auto">
-                Déjanos tus datos y te avisaremos cuando se acerque tu fecha, o reserva con anticipación el momento que más te convenga. Toda información es confidencial.
+              <p className="text-muted-foreground max-w-xl mx-auto leading-relaxed">
+                Déjanos tus datos y te avisaremos cuando se acerque tu fecha, o reserva con anticipación el momento que más te convenga. Garantizamos que toda tu información es completamente confidencial.
               </p>
             </div>
 
             {formStatus === "idle" ? (
               <form onSubmit={handleSubmit} className="bg-background p-6 md:p-12 rounded-[24px] md:rounded-[40px] shadow-xl border space-y-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold tracking-widest uppercase text-primary ml-2">Tu nombre</label>
+                  <label className="text-xs font-bold tracking-widest uppercase text-primary ml-2">NOMBRE</label>
                   <input type="text" name="nombre" required className="w-full bg-muted/50 border-none rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
                 <div className="space-y-2">
@@ -216,7 +237,7 @@ const Mikve = () => {
                   <input type="tel" name="telefono" required className="w-full bg-muted/50 border-none rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold tracking-widest uppercase text-primary ml-2">Qué te gustaría reservar</label>
+                  <label className="text-xs font-bold tracking-widest uppercase text-primary ml-2">¿QUÉ EXPERIENCIA TE GUSTARÍA RESERVAR?</label>
                   <select name="fase" required className="w-full bg-muted/50 border-none rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-primary/20 appearance-none">
                     <option value="">— elegir —</option>
                     <option value="esencial">🌿 Esencial</option>
@@ -230,11 +251,11 @@ const Mikve = () => {
                   <input type="date" name="fecha" className="w-full bg-muted/50 border-none rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-primary/20" />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold tracking-widest uppercase text-primary ml-2">Algo que quieras contarnos</label>
+                  <label className="text-xs font-bold tracking-widest uppercase text-primary ml-2">¿HAY ALGO QUE QUIERAS CONTARNOS?</label>
                   <textarea name="mensaje" rows={3} placeholder="alergias, preferencias, primera vez..." className="w-full bg-muted/50 border-none rounded-2xl px-6 py-4 outline-none focus:ring-2 focus:ring-primary/20 resize-none"></textarea>
                 </div>
-                <Button type="submit" className="w-full py-8 text-lg rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
-                  Enviar a WhatsApp <ArrowRight className="w-5 h-5" />
+                <Button type="submit" className="w-full py-8 text-lg rounded-2xl bg-[#25D366] hover:bg-[#20ba5a] text-white gap-2 font-bold shadow-lg shadow-green-500/10">
+                  <MessageCircle className="w-5 h-5 fill-white text-[#25D366]" /> Agendar por WhatsApp
                 </Button>
               </form>
             ) : (
@@ -257,7 +278,11 @@ const Mikve = () => {
         onClose={() => setIsModalOpen(false)}
       />
 
-      <FooterSection />
+      <FooterSection 
+        ctaTitle="No postergués más tu bienestar."
+        ctaDescription="Da el primer paso para liberar tensiones y brindale a tu cuerpo el cuidado que merece."
+        ctaButtonText="Reservá tu Turno Ahora"
+      />
       <WhatsAppFab />
     </div>
   );

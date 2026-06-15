@@ -17,6 +17,7 @@ export default {
       fontFamily: {
         display: ['"Playfair Display"', 'serif'],
         body: ['"DM Sans"', 'sans-serif'],
+        caviar: ['"Caviar Dreams"', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

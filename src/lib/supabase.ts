@@ -18,6 +18,7 @@ export type Service = {
   price: number;
   active: boolean;
   image_url: string | null;
+  image_position?: string | null;
   deposit_amount: number;
   mercadopago_link: string | null;
   category: string;

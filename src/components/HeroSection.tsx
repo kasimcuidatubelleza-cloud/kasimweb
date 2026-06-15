@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import heroImage from "@/assets/hero-nails.jpg";
 
 const HeroSection = () => {
   return (
@@ -7,11 +6,12 @@ const HeroSection = () => {
       {/* Background video (YouTube Embed) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden bg-black">
         <iframe
-          src="https://www.youtube.com/embed/0_VLZs8dWjo?autoplay=1&mute=1&loop=1&playlist=0_VLZs8dWjo&controls=0&showinfo=0&rel=0&playsinline=1&iv_load_policy=3&modestbranding=1&enablejsapi=1"
+          src="https://www.youtube.com/embed/fMEoESMiADQ?autoplay=1&mute=1&loop=1&playlist=fMEoESMiADQ&controls=0&showinfo=0&rel=0&playsinline=1&iv_load_policy=3&modestbranding=1&enablejsapi=1"
           title="Background Video"
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vh] h-[177.77vh] aspect-[9/16] object-cover scale-[2.5]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-screen h-[56.25vw] min-h-screen min-w-[177.77vh] object-cover scale-[1.15] pointer-events-none"
           allow="autoplay; encrypted-media"
           frameBorder="0"
+          sandbox="allow-scripts allow-same-origin allow-presentation"
         />
         <div className="absolute inset-0 bg-black/50" />
       </div>
@@ -24,7 +24,7 @@ const HeroSection = () => {
             transition={{ delay: 0.2 }}
             className="text-rose-gold text-sm md:text-base font-medium tracking-[0.25em] uppercase mb-4"
           >
-            Salón de Uñas & Estética · Palermo
+            ESTUDIO DE UÑAS, ESTÉTICA & BIENESTAR INTEGRAL · RECOLETA
           </motion.p>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
@@ -32,7 +32,7 @@ const HeroSection = () => {
             transition={{ delay: 0.4 }}
             className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-cream leading-tight"
           >
-            Cuida tu
+            Mucho más que
             <br />
             <span className="italic text-rose-gold">belleza</span>
           </motion.h1>
@@ -42,8 +42,7 @@ const HeroSection = () => {
             transition={{ delay: 0.6 }}
             className="text-nude text-base md:text-lg mt-6 max-w-md leading-relaxed"
           >
-            Brindamos salud y descanso para tus manos y pies. 
-            Somos expertos en prevención y tratamiento de patologías.
+            Brindamos salud y descanso para tus manos y pies. Somos expertos en la prevención y el tratamiento de patologías, combinando el cuidado estético con el bienestar que tu cuerpo necesita.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}

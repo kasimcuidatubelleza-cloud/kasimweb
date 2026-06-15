@@ -20,25 +20,33 @@ const AboutSection = () => {
             viewport={{ once: true }}
           >
             <p className="text-primary text-sm font-medium tracking-[0.2em] uppercase mb-3">
-              Quiénes Somos
+              ¿Quiénes Somos?
             </p>
             <h2 className="text-3xl md:text-4xl font-display font-bold leading-tight">
-              Somos Ana Karina Campos y Fernando
+              Ana Karina Campos y Fernando Higa.
             </h2>
-            <p className="text-muted-foreground mt-6 leading-relaxed">
-              Somos 2 jóvenes que se atrevieron a creer que llega el tiempo del respeto al cuerpo y resaltar la belleza de forma natural.
+            <p className="text-muted-foreground mt-6 leading-relaxed text-sm">
+              Somos dos jóvenes profesionales que nos atrevimos a creer en una belleza consciente; una que respeta el cuerpo y resalta su esencia de forma natural. Con el respaldo de los 22 años de trayectoria de Ana en el cuidado estético y la experiencia de Fernando en la administración de negocios, fundamos Kasim: un espacio pensado para quienes buscan cuidar su salud y belleza, restaurarse y reconciliarse con su cuerpo.
             </p>
-            <p className="text-muted-foreground mt-4 leading-relaxed">
-              Ana se dedica hace 22 años a los servicios del cuidado de la belleza. Esto nos llevó a la misión de crear <strong className="text-foreground">Kasim</strong>, un proyecto dedicado a cuidar la salud y la belleza de quienes buscan restaurar y reconciliarse con su cuerpo.
-            </p>
-            <p className="text-muted-foreground mt-4 leading-relaxed">
-              Nuestro valor diferencial es unir la salud y la belleza de manera 
-              responsable. A través de profesionales expertos, prevención, y el uso 
-              de productos de primera calidad.
-            </p>
-            <p className="text-muted-foreground mt-4 leading-relaxed">
-              Ofrecemos nuestros servicios en nuestras instalaciones, a domicilio y a comunidades y empresas.
-            </p>
+
+            <div className="mt-8 space-y-3">
+              <h4 className="font-display font-bold text-foreground uppercase tracking-wider text-xs">Nuestro valor diferencial:</h4>
+              <p className="text-muted-foreground leading-relaxed text-sm">
+                En Kasim, nuestra misión es fusionar la salud y la belleza de manera responsable, apoyados en:
+              </p>
+              <ul className="space-y-2 text-muted-foreground text-sm pl-4 list-disc marker:text-primary">
+                <li>Profesionales expertos.</li>
+                <li>Tratamiento y prevención de patologías en manos y pies.</li>
+                <li>Bioseguridad: Uso de productos de primera calidad y descartables.</li>
+              </ul>
+            </div>
+
+            <div className="mt-8 space-y-2">
+              <h4 className="font-display font-bold text-foreground uppercase tracking-wider text-xs">¿Dónde te atendemos?</h4>
+              <p className="text-muted-foreground leading-relaxed text-sm">
+                Llevamos bienestar a donde lo necesites. Disfruta de la experiencia Kasim en nuestras instalaciones o a domicilio (atención particular, comunidades y empresas).
+              </p>
+            </div>
           </motion.div>
 
           {/* Features grid */}

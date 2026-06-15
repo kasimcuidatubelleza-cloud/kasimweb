@@ -73,8 +73,8 @@ const GallerySection = () => {
   return (
     <div className="bg-background text-foreground py-16 overflow-hidden border-t border-border">
       <div className="container mb-8 text-center">
-        <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight">Nuestros Trabajos</h3>
-        <p className="text-muted-foreground text-sm mt-2">Un poco de lo que hacemos con amor y dedicación</p>
+        <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight">Resultados <span className="italic">Kasim</span></h3>
+        <p className="text-muted-foreground text-sm mt-2">Historias reales de bienestar: El cuidado, la dedicación y el amor que ponemos en cada detalle.</p>
       </div>
       
       <div 

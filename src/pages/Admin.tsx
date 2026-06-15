@@ -8,7 +8,7 @@ import {
   Calendar, Scissors, LogOut, CheckCircle2, XCircle, Clock, Plus, RefreshCw, 
   CreditCard, Banknote, Eye, X, User, Loader2, Search, Filter, 
   ChevronLeft, ChevronRight, History, CalendarDays, ExternalLink, Link as LinkIcon,
-  Trash2, Edit3, Image as ImageIcon, DollarSign, Upload, Settings2, Save
+  Trash2, Edit3, Image as ImageIcon, DollarSign, Upload, Settings2, Save, MessageCircle
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnimatePresence, motion } from "framer-motion";
@@ -29,6 +29,8 @@ const getServiceImage = (s: any) => {
   const key = s.name.toLowerCase().replace(/ /g, '-');
   return imageMap[key] || '/842.jpg';
 };
+
+const daysLabels = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
 const Admin = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,7 +53,7 @@ const Admin = () => {
   const itemsPerPage = 25;
 
   const [serviceForm, setServiceForm] = useState({
-    name: "", description: "", price: 0, duration_minutes: 30, deposit_amount: 0, image_url: "", mercadopago_link: "", category: "general"
+    name: "", description: "", price: 0, duration_minutes: 30, deposit_amount: 0, image_url: "", image_position: "50% 50%", mercadopago_link: "", category: "general"
   });
 
   const [bankAccountForm, setBankAccountForm] = useState({
@@ -107,10 +109,16 @@ const Admin = () => {
     setIsSaving(true);
     try {
       for (const hour of businessHours) {
+        // Also save the first block's start_time and end_time to keep backwards compatibility if anything relies on them
+        const firstBlock = hour.blocks && hour.blocks.length > 0 ? hour.blocks[0] : null;
+        const start_time = firstBlock ? `${firstBlock.start_time}:00` : "09:00:00";
+        const end_time = firstBlock ? `${firstBlock.end_time}:00` : "18:00:00";
+
         const { error } = await supabase.from('business_hours').update({
-          start_time: hour.start_time,
-          end_time: hour.end_time,
-          is_closed: hour.is_closed
+          start_time,
+          end_time,
+          is_closed: hour.is_closed,
+          blocks: hour.blocks || []
         }).eq('id', hour.id);
         if (error) throw error;
       }
@@ -177,15 +185,13 @@ const Admin = () => {
 
   const paginate = (items: any[]) => items.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  const daysLabels = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-
   return (
     <div className="min-h-screen bg-muted/10">
       <header className="bg-background border-b p-4 sticky top-0 z-20 shadow-sm">
         <div className="container flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white font-display font-bold shadow-lg shadow-primary/20">K</div>
-            <h1 className="text-xl font-display font-bold text-primary">Kasim Admin</h1>
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white brand-name shadow-lg shadow-primary/20">K</div>
+            <h1 className="text-xl brand-name text-primary">KASIM Admin</h1>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" onClick={fetchData} disabled={isLoading}><RefreshCw className={isLoading ? 'animate-spin' : ''} /></Button>
@@ -264,6 +270,7 @@ const Admin = () => {
                   apps={paginate(appointments.filter(a => (a.status === 'completed' || a.status === 'cancelled') && a.services?.category !== 'mikve'))} 
                   onUpdateStatus={() => fetchData()} 
                   onViewImage={setSelectedImage}
+                  isHistory={true}
                 />
               </div>
               <div>
@@ -275,6 +282,7 @@ const Admin = () => {
                   apps={paginate(appointments.filter(a => (a.status === 'completed' || a.status === 'cancelled') && a.services?.category === 'mikve'))} 
                   onUpdateStatus={() => fetchData()} 
                   onViewImage={setSelectedImage}
+                  isHistory={true}
                 />
               </div>
             </div>
@@ -284,13 +292,18 @@ const Admin = () => {
           <TabsContent value="services">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold">Servicios Generales</h3>
-              <Button size="sm" onClick={() => { setEditingService(null); setServiceImageFile(null); setServiceForm({ name: "", description: "", price: 0, duration_minutes: 30, deposit_amount: 0, image_url: "", mercadopago_link: "", category: "general" }); setIsServiceModalOpen(true); }} className="rounded-xl gap-2"><Plus className="w-4 h-4" /> Nuevo</Button>
+              <Button size="sm" onClick={() => { setEditingService(null); setServiceImageFile(null); setServiceForm({ name: "", description: "", price: 0, duration_minutes: 30, deposit_amount: 0, image_url: "", image_position: "50% 50%", mercadopago_link: "", category: "general" }); setIsServiceModalOpen(true); }} className="rounded-xl gap-2"><Plus className="w-4 h-4" /> Nuevo</Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {services.filter(s => s.category !== 'mikve').map(s => (
                 <div key={s.id} className="bg-background rounded-[32px] border flex flex-col h-full group overflow-hidden hover:shadow-lg transition-all">
                   <div className="h-40 overflow-hidden">
-                    <img src={getServiceImage(s)} alt={s.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <img 
+                      src={getServiceImage(s)} 
+                      alt={s.name} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                      style={{ objectPosition: s.image_position || '50% 50%' }}
+                    />
                   </div>
                   <div className="p-6 flex flex-col flex-grow">
                     <div className="flex justify-between items-start mb-2">
@@ -304,7 +317,7 @@ const Admin = () => {
                       {s.mercadopago_link && <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-lg">MP ✓</span>}
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 rounded-xl gap-1" onClick={() => { setEditingService(s); setServiceForm(s as any); setServiceImageFile(null); setIsServiceModalOpen(true); }}>
+                      <Button variant="outline" size="sm" className="flex-1 rounded-xl gap-1" onClick={() => { setEditingService(s); setServiceForm({ ...s, image_position: s.image_position || "50% 50%" } as any); setServiceImageFile(null); setIsServiceModalOpen(true); }}>
                         <Edit3 className="w-3 h-3" /> Editar
                       </Button>
                       <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl" onClick={async () => { if (!confirm("¿Eliminar este servicio?")) return; const { error } = await supabase.from('services').delete().eq('id', s.id); if (!error) { toast.success("Eliminado"); fetchData(); } else toast.error("Tiene citas asociadas."); }}>
@@ -321,14 +334,19 @@ const Admin = () => {
           <TabsContent value="services_mikve">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold">Servicios Comunidad Judía (Mikve)</h3>
-              <Button size="sm" onClick={() => { setEditingService(null); setServiceImageFile(null); setServiceForm({ name: "", description: "", price: 0, duration_minutes: 30, deposit_amount: 0, image_url: "", mercadopago_link: "", category: "mikve" }); setIsServiceModalOpen(true); }} className="rounded-xl gap-2"><Plus className="w-4 h-4" /> Nuevo Mikve</Button>
+              <Button size="sm" onClick={() => { setEditingService(null); setServiceImageFile(null); setServiceForm({ name: "", description: "", price: 0, duration_minutes: 30, deposit_amount: 0, image_url: "", image_position: "50% 50%", mercadopago_link: "", category: "mikve" }); setIsServiceModalOpen(true); }} className="rounded-xl gap-2"><Plus className="w-4 h-4" /> Nuevo Mikve</Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {services.filter(s => s.category === 'mikve').map(s => (
                 <div key={s.id} className="bg-background rounded-[32px] border flex flex-col h-full group overflow-hidden hover:shadow-lg transition-all border-purple-200">
                   <div className="h-40 overflow-hidden relative">
                     <div className="absolute top-2 right-2 bg-purple-500 text-white text-[10px] font-bold px-2 py-1 rounded-full z-10">Mikve</div>
-                    <img src={getServiceImage(s)} alt={s.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <img 
+                      src={getServiceImage(s)} 
+                      alt={s.name} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                      style={{ objectPosition: s.image_position || '50% 50%' }}
+                    />
                   </div>
                   <div className="p-6 flex flex-col flex-grow">
                     <div className="flex justify-between items-start mb-2">
@@ -342,7 +360,7 @@ const Admin = () => {
                       {s.mercadopago_link && <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-lg">MP ✓</span>}
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="flex-1 rounded-xl gap-1" onClick={() => { setEditingService(s); setServiceForm(s as any); setServiceImageFile(null); setIsServiceModalOpen(true); }}>
+                      <Button variant="outline" size="sm" className="flex-1 rounded-xl gap-1" onClick={() => { setEditingService(s); setServiceForm({ ...s, image_position: s.image_position || "50% 50%" } as any); setServiceImageFile(null); setIsServiceModalOpen(true); }}>
                         <Edit3 className="w-3 h-3" /> Editar
                       </Button>
                       <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 rounded-xl" onClick={async () => { if (!confirm("¿Eliminar este servicio?")) return; const { error } = await supabase.from('services').delete().eq('id', s.id); if (!error) { toast.success("Eliminado"); fetchData(); } else toast.error("Tiene citas asociadas."); }}>
@@ -404,43 +422,20 @@ const Admin = () => {
 
               <div className="space-y-4">
                 {businessHours.map((hour, index) => (
-                  <div key={hour.id} className={`flex flex-col md:flex-row items-center justify-between p-6 rounded-3xl border transition-all ${hour.is_closed ? 'bg-muted/50 opacity-60' : 'bg-background hover:border-primary/30'}`}>
-                    <div className="flex items-center gap-4 mb-4 md:mb-0 w-full md:w-40">
-                      <div className={`w-3 h-3 rounded-full ${hour.is_closed ? 'bg-red-500' : 'bg-green-500'}`} />
-                      <span className="font-bold">{daysLabels[hour.day_of_week]}</span>
-                    </div>
-
-                    <div className="flex items-center gap-6 flex-1 justify-center md:justify-end w-full">
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="time" 
-                          disabled={hour.is_closed}
-                          value={hour.start_time} 
-                          onChange={e => {
-                            const newHours = [...businessHours];
-                            newHours[index].start_time = e.target.value;
-                            setBusinessHours(newHours);
-                          }}
-                          className="p-2 rounded-xl bg-muted border border-border text-sm outline-none focus:ring-2 focus:ring-primary/20"
-                        />
-                        <span className="text-muted-foreground">a</span>
-                        <input 
-                          type="time" 
-                          disabled={hour.is_closed}
-                          value={hour.end_time} 
-                          onChange={e => {
-                            const newHours = [...businessHours];
-                            newHours[index].end_time = e.target.value;
-                            setBusinessHours(newHours);
-                          }}
-                          className="p-2 rounded-xl bg-muted border border-border text-sm outline-none focus:ring-2 focus:ring-primary/20"
-                        />
+                  <div key={hour.id} className={`flex flex-col p-6 rounded-3xl border transition-all ${hour.is_closed ? 'bg-muted/50 opacity-60' : 'bg-background hover:border-primary/30'}`}>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-muted/50 mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-3 h-3 rounded-full ${hour.is_closed ? 'bg-red-500' : 'bg-green-500'}`} />
+                        <span className="font-bold text-lg">{daysLabels[hour.day_of_week]}</span>
                       </div>
 
                       <button 
                         onClick={() => {
                           const newHours = [...businessHours];
                           newHours[index].is_closed = !newHours[index].is_closed;
+                          if (!newHours[index].is_closed && (!newHours[index].blocks || newHours[index].blocks.length === 0)) {
+                            newHours[index].blocks = [{ start_time: "09:00", end_time: "18:00" }];
+                          }
                           setBusinessHours(newHours);
                         }}
                         className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${hour.is_closed ? 'bg-green-500/10 text-green-600 hover:bg-green-500/20' : 'bg-red-500/10 text-red-600 hover:bg-red-500/20'}`}
@@ -448,6 +443,66 @@ const Admin = () => {
                         {hour.is_closed ? 'Abrir Día' : 'Cerrar Día'}
                       </button>
                     </div>
+
+                    {!hour.is_closed && (
+                      <div className="space-y-3">
+                        <div className="flex flex-col gap-2">
+                          {hour.blocks && hour.blocks.map((block: any, bIndex: number) => (
+                            <div key={bIndex} className="flex items-center gap-2 bg-muted/20 p-2 rounded-2xl max-w-md">
+                              <input 
+                                type="time" 
+                                value={block.start_time} 
+                                onChange={e => {
+                                  const newHours = [...businessHours];
+                                  newHours[index].blocks[bIndex].start_time = e.target.value;
+                                  setBusinessHours(newHours);
+                                }}
+                                className="p-2 rounded-xl bg-background border border-border text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                              />
+                              <span className="text-muted-foreground text-sm">a</span>
+                              <input 
+                                type="time" 
+                                value={block.end_time} 
+                                onChange={e => {
+                                  const newHours = [...businessHours];
+                                  newHours[index].blocks[bIndex].end_time = e.target.value;
+                                  setBusinessHours(newHours);
+                                }}
+                                className="p-2 rounded-xl bg-background border border-border text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                              />
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  const newHours = [...businessHours];
+                                  newHours[index].blocks.splice(bIndex, 1);
+                                  setBusinessHours(newHours);
+                                }}
+                                className="p-2 text-red-500 hover:bg-red-50 rounded-xl ml-auto transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => {
+                            const newHours = [...businessHours];
+                            if (!newHours[index].blocks) {
+                              newHours[index].blocks = [];
+                            }
+                            newHours[index].blocks.push({ start_time: "14:00", end_time: "18:00" });
+                            setBusinessHours(newHours);
+                          }}
+                          className="rounded-xl gap-1"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Agregar bloque
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -489,22 +544,98 @@ const Admin = () => {
                   </div>
 
                   {/* IMAGEN */}
-                  <div className="md:col-span-2 space-y-2">
-                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Imagen del Servicio</label>
-                    <div className="flex gap-4 items-center">
-                      <div className="w-24 h-24 rounded-2xl bg-muted border border-border overflow-hidden flex items-center justify-center flex-shrink-0">
-                        {(serviceImageFile || serviceForm.image_url) ? (
-                          <img src={serviceImageFile ? URL.createObjectURL(serviceImageFile) : serviceForm.image_url} className="w-full h-full object-cover" />
-                        ) : (
-                          <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
-                        )}
+                  <div className="md:col-span-2 space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Imagen del Servicio</label>
+                      <div className="flex gap-4 items-center">
+                        <div className="w-24 h-24 rounded-2xl bg-muted border border-border overflow-hidden flex items-center justify-center flex-shrink-0 bg-background">
+                          {(serviceImageFile || serviceForm.image_url) ? (
+                            <img 
+                              src={serviceImageFile ? URL.createObjectURL(serviceImageFile) : serviceForm.image_url} 
+                              className="w-full h-full object-cover" 
+                              style={{ objectPosition: serviceForm.image_position || '50% 50%' }}
+                            />
+                          ) : (
+                            <ImageIcon className="w-8 h-8 text-muted-foreground/30" />
+                          )}
+                        </div>
+                        <label className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-[24px] cursor-pointer hover:bg-muted/50 transition-colors">
+                          <Upload className="w-6 h-6 text-primary mb-1" />
+                          <span className="text-xs font-bold text-muted-foreground">{serviceImageFile ? serviceImageFile.name : 'Subir desde PC'}</span>
+                          <input type="file" className="hidden" accept="image/*" onChange={e => setServiceImageFile(e.target.files?.[0] || null)} />
+                        </label>
                       </div>
-                      <label className="flex-1 flex flex-col items-center justify-center p-6 border-2 border-dashed border-border rounded-[24px] cursor-pointer hover:bg-muted/50 transition-colors">
-                        <Upload className="w-6 h-6 text-primary mb-1" />
-                        <span className="text-xs font-bold text-muted-foreground">{serviceImageFile ? serviceImageFile.name : 'Subir desde PC'}</span>
-                        <input type="file" className="hidden" accept="image/*" onChange={e => setServiceImageFile(e.target.files?.[0] || null)} />
-                      </label>
                     </div>
+
+                    {/* CONTROL DE ENCUADRE DE IMAGEN (SLIDERS Y VISTA PREVIA) */}
+                    {(serviceImageFile || serviceForm.image_url) && (() => {
+                      const [posX, posY] = (serviceForm.image_position || "50% 50%").split(" ");
+                      const xVal = parseInt(posX) || 50;
+                      const yVal = parseInt(posY) || 50;
+
+                      return (
+                        <div className="bg-muted/30 p-5 rounded-3xl border border-border space-y-4">
+                          <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Encuadre / Vista Previa de la Tarjeta</p>
+                          
+                          {/* Vista previa en escala real */}
+                          <div className="w-full h-40 rounded-2xl overflow-hidden relative border bg-muted">
+                            <img 
+                              src={serviceImageFile ? URL.createObjectURL(serviceImageFile) : (serviceForm.image_url || '/placeholder.svg')} 
+                              alt="Vista previa" 
+                              className="w-full h-full object-cover"
+                              style={{ objectPosition: serviceForm.image_position || '50% 50%' }}
+                            />
+                            <div className="absolute inset-0 bg-black/5 border-2 border-primary/20 rounded-2xl pointer-events-none" />
+                          </div>
+
+                          {/* Sliders */}
+                          <div className="space-y-4">
+                            <div className="space-y-1.5">
+                              <div className="flex justify-between text-xs font-bold text-muted-foreground">
+                                <span>Ajuste Vertical (Arriba / Abajo)</span>
+                                <span className="text-primary">{yVal}%</span>
+                              </div>
+                              <input 
+                                type="range" 
+                                min="0" 
+                                max="100" 
+                                value={yVal} 
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  setServiceForm({
+                                    ...serviceForm,
+                                    image_position: `${xVal}% ${val}%`
+                                  });
+                                }}
+                                className="w-full accent-primary h-1.5 bg-muted rounded-lg appearance-none cursor-pointer"
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <div className="flex justify-between text-xs font-bold text-muted-foreground">
+                                <span>Ajuste Horizontal (Izquierda / Derecha)</span>
+                                <span className="text-primary">{xVal}%</span>
+                              </div>
+                              <input 
+                                type="range" 
+                                min="0" 
+                                max="100" 
+                                value={xVal} 
+                                onChange={e => {
+                                  const val = e.target.value;
+                                  setServiceForm({
+                                    ...serviceForm,
+                                    image_position: `${val}% ${yVal}%`
+                                  });
+                                }}
+                                className="w-full accent-primary h-1.5 bg-muted rounded-lg appearance-none cursor-pointer"
+                              />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground italic text-center leading-normal">Desplaza los controles para ajustar exactamente qué parte de la foto se verá en las tarjetas.</p>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* MERCADO PAGO */}
@@ -558,7 +689,7 @@ const Admin = () => {
   );
 };
 
-const AppointmentList = ({ apps, onUpdateStatus, onViewImage }: any) => {
+const AppointmentList = ({ apps, onUpdateStatus, onViewImage, isHistory }: any) => {
   if (apps.length === 0) {
     return <div className="text-center py-20 bg-background rounded-3xl border-dashed border border-border text-muted-foreground">Sin citas.</div>;
   }
@@ -612,10 +743,39 @@ const AppointmentList = ({ apps, onUpdateStatus, onViewImage }: any) => {
                 <h4 className="font-bold text-lg leading-tight">{app.services?.name}</h4>
                 <div className="flex flex-col gap-1 bg-muted/20 p-3 rounded-2xl border border-border/50">
                   <p className="text-sm font-bold flex items-center gap-2"><User className="w-4 h-4 text-primary" /> {app.profiles?.full_name || app.guest_name}</p>
-                  {app.profiles && (
-                    <p className="text-[11px] text-muted-foreground font-medium ml-6">
-                      TEL: <a href={`https://wa.me/${app.profiles.phone?.replace(/[^0-9]/g, '')}`} target="_blank" className="text-primary hover:underline">{app.profiles.phone || 'S/D'}</a> | DNI: {app.profiles.dni || 'S/D'}
-                    </p>
+                  {app.profiles && app.profiles.phone ? (() => {
+                    const phoneClean = app.profiles.phone.replace(/[^0-9]/g, '');
+                    const clientName = app.profiles.full_name || app.guest_name || 'Cliente';
+                    const serviceName = app.services?.name || 'Servicio';
+                    const dateString = new Date(app.start_time).toLocaleDateString('es-AR');
+                    const timeString = new Date(app.start_time).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    const msg = `Hola ${clientName}, te recordamos tu cita para *${serviceName}* el día *${dateString}* a las *${timeString} hs* en Kasim. ¡Te esperamos! 🤍`;
+                    const waUrl = isHistory 
+                      ? `https://wa.me/${phoneClean}` 
+                      : `https://wa.me/${phoneClean}?text=${encodeURIComponent(msg)}`;
+                    
+                    return (
+                      <p className="text-[11px] text-muted-foreground font-medium ml-6 flex flex-wrap items-center gap-2">
+                        TEL: 
+                        <a 
+                          href={waUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="inline-flex items-center gap-1 text-primary hover:underline bg-primary/5 hover:bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/10 transition-colors font-bold text-[10px]"
+                        >
+                          <MessageCircle className="w-3 h-3 text-green-500 fill-green-500/20" />
+                          {app.profiles.phone}
+                        </a> 
+                        | DNI: {app.profiles.dni || 'S/D'}
+                      </p>
+                    );
+                  })() : (
+                    app.profiles && (
+                      <p className="text-[11px] text-muted-foreground font-medium ml-6">
+                        TEL: S/D | DNI: {app.profiles.dni || 'S/D'}
+                      </p>
+                    )
                   )}
                 </div>
                 {app.notes && <p className="text-[11px] text-muted-foreground italic px-3 py-2 bg-amber-50 border border-amber-100 text-amber-800 rounded-xl">"{app.notes}"</p>}

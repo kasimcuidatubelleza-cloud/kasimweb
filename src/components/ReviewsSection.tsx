@@ -21,10 +21,10 @@ const ReviewsSection = () => {
           className="text-center mb-12"
         >
           <p className="text-primary text-sm font-medium tracking-[0.2em] uppercase mb-3">
-            Testimonios
+            Testimonios que nos inspiran
           </p>
-          <h2 className="text-3xl md:text-5xl font-display font-bold">
-            Qué dicen de <span className="italic">nosotros</span>
+          <h2 className="text-3xl md:text-5xl font-display font-bold leading-tight">
+            Descubre la experiencia de quienes confían en <span className="italic">Kasim</span>
           </h2>
           <div className="flex items-center justify-center gap-2 mt-4">
             <div className="flex gap-0.5">

@@ -154,7 +154,7 @@ const Header = () => {
                 <div className="flex flex-col gap-3 pt-4 border-t border-border">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground px-4">
                     <MapPin className="w-4 h-4 shrink-0" />
-                    <span>Libertad 844, CABA</span>
+                    <span>CABA, Argentina</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground px-4">
                     <Phone className="w-4 h-4 shrink-0" />

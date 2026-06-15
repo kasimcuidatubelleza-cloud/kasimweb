@@ -108,8 +108,8 @@ const Login = () => {
         className="w-full max-w-md bg-background rounded-3xl shadow-2xl border border-border p-8"
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-display font-bold uppercase tracking-widest text-primary">KASIM</h1>
-          <p className="text-muted-foreground mt-2">{authMode === 'login' ? 'Inicia sesión para gestionar tus turnos' : 'Crea tu cuenta para agendar turnos'}</p>
+          <h1 className="text-3xl brand-name uppercase tracking-widest text-primary">KASIM</h1>
+          <p className="text-muted-foreground mt-2">{authMode === 'login' ? 'Iniciá sesión para gestionar tus turnos.' : 'Crea tu cuenta para agendar turnos'}</p>
         </div>
 
         <div className="flex bg-muted p-1.5 rounded-2xl mb-6">

@@ -73,13 +73,13 @@ export const services: Service[] = [
     image: "alargamiento",
   },
   {
-    id: "caping",
-    name: "Caping",
+    id: "capping",
+    name: "Capping",
     category: "Tratamientos",
     description: "Capa fina sobre la uña para quienes les falta queratina. Endurecedor con mayor duración del esmaltado. Revisión cada 20 días.",
     price: "Consultar",
     duration: "60 min",
-    image: "caping",
+    image: "capping",
   },
   {
     id: "perfilado-cejas",

@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, Clock, Send, Loader2, LogIn, UserPlus, CreditCard, Banknote, Upload, ArrowRight, Percent, ExternalLink, User, AlertCircle, Image as ImageIcon } from "lucide-react";
+import { X, Calendar, Clock, Send, Loader2, LogIn, UserPlus, CreditCard, Banknote, Upload, ArrowRight, Percent, ExternalLink, User, AlertCircle, Image as ImageIcon, CheckCircle2, MapPin } from "lucide-react";
 import { Service, supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -27,9 +27,25 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
   const [paymentType, setPaymentType] = useState<'full' | 'deposit'>('full');
   const [evidenceFile, setEvidenceFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [bookingStep, setBookingStep] = useState<'datetime' | 'payment'>('datetime');
+  const [bookingStep, setBookingStep] = useState<'datetime' | 'payment' | 'success'>('datetime');
   const [businessHours, setBusinessHours] = useState<any[]>([]);
   const [bankAccounts, setBankAccounts] = useState<any[]>([]);
+
+  // Sync prop changes during render to avoid useEffect
+  const prevServiceId = useRef<string | null>(null);
+  const currentServiceId = service?.id || null;
+  if (currentServiceId !== prevServiceId.current) {
+    prevServiceId.current = currentServiceId;
+    setPaymentType('full');
+  }
+
+  const handleClose = () => {
+    setSelectedDate("");
+    setSelectedTime("");
+    setEvidenceFile(null);
+    setBookingStep('datetime');
+    onClose();
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -46,12 +62,6 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  useEffect(() => {
-    if (service) {
-      setPaymentType('full');
-    }
-  }, [service]);
 
   const fetchBusinessHours = async () => {
     const { data } = await supabase.from('business_hours').select('*');
@@ -71,24 +81,27 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
 
   const [occupiedSlots, setOccupiedSlots] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (selectedDate) fetchOccupiedSlots();
-  }, [selectedDate]);
+  const handleDateChange = async (date: string) => {
+    setSelectedDate(date);
+    if (date) {
+      const startOfDay = new Date(date + 'T00:00:00').toISOString();
+      const endOfDay = new Date(date + 'T23:59:59').toISOString();
 
-  const fetchOccupiedSlots = async () => {
-    const startOfDay = new Date(selectedDate + 'T00:00:00').toISOString();
-    const endOfDay = new Date(selectedDate + 'T23:59:59').toISOString();
+      const { data } = await supabase
+        .from('appointments')
+        .select('start_time')
+        .gte('start_time', startOfDay)
+        .lte('start_time', endOfDay)
+        .not('status', 'in', '("cancelled", "refunded", "pending_refund")');
 
-    const { data } = await supabase
-      .from('appointments')
-      .select('start_time')
-      .gte('start_time', startOfDay)
-      .lte('start_time', endOfDay)
-      .not('status', 'in', '("cancelled", "refunded", "pending_refund")');
-
-    if (data) {
-      const times = data.map(app => format(new Date(app.start_time), 'HH:mm'));
-      setOccupiedSlots(times);
+      if (data) {
+        const times = data.map(app => format(new Date(app.start_time), 'HH:mm'));
+        setOccupiedSlots(times);
+      } else {
+        setOccupiedSlots([]);
+      }
+    } else {
+      setOccupiedSlots([]);
     }
   };
 
@@ -103,17 +116,37 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
     
     if (!dayConfig || dayConfig.is_closed) return [];
 
-    const slots = [];
-    let current = parseInt(dayConfig.start_time.split(':')[0]);
-    const end = parseInt(dayConfig.end_time.split(':')[0]);
+    const slots: string[] = [];
+    const occupiedSet = new Set(occupiedSlots);
+    const slotsSet = new Set<string>();
 
-    for (let i = current; i < end; i++) {
-      const time = `${i.toString().padStart(2, '0')}:00`;
-      if (!occupiedSlots.includes(time)) {
-        slots.push(time);
+    // Si tiene bloques configurados, los usamos
+    if (dayConfig.blocks && Array.isArray(dayConfig.blocks) && dayConfig.blocks.length > 0) {
+      dayConfig.blocks.forEach((block: { start_time: string; end_time: string }) => {
+        const current = parseInt(block.start_time.split(':')[0]);
+        const end = parseInt(block.end_time.split(':')[0]);
+        for (let i = current; i < end; i++) {
+          const time = `${i.toString().padStart(2, '0')}:00`;
+          if (!slotsSet.has(time) && !occupiedSet.has(time)) {
+            slots.push(time);
+            slotsSet.add(time);
+          }
+        }
+      });
+    } else {
+      // Compatibilidad si no tiene el campo blocks (fallback a start_time/end_time)
+      const current = parseInt(dayConfig.start_time.split(':')[0]);
+      const end = parseInt(dayConfig.end_time.split(':')[0]);
+      for (let i = current; i < end; i++) {
+        const time = `${i.toString().padStart(2, '0')}:00`;
+        if (!occupiedSet.has(time)) {
+          slots.push(time);
+        }
       }
     }
-    return slots;
+
+    // Ordenar los turnos por hora para que se muestren correctamente
+    return slots.sort((a, b) => a.localeCompare(b));
   }, [selectedDate, businessHours, occupiedSlots]);
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -204,7 +237,7 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
       });
 
       toast.success("¡Turno reservado con éxito!");
-      onClose();
+      setBookingStep('success');
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -223,17 +256,17 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
         >
           <motion.div 
             initial={{ scale: 0.95, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 20 }}
-            className="bg-background w-full max-w-lg rounded-[40px] overflow-hidden shadow-2xl border border-border"
+            className="bg-background w-full max-w-lg rounded-[28px] sm:rounded-[40px] overflow-hidden shadow-2xl border border-border"
           >
-            <div className="relative p-8 border-b border-border bg-muted/30 flex justify-between items-center">
+            <div className="relative p-5 sm:p-8 border-b border-border bg-muted/30 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-display font-bold text-primary">Agendar Turno</h2>
+                <h2 className="text-xl sm:text-2xl font-display font-bold text-primary">Agendar Turno</h2>
                 <p className="text-xs text-muted-foreground">{service?.name}</p>
               </div>
-              <button onClick={onClose} className="p-2 rounded-full hover:bg-muted transition-colors"><X className="w-6 h-6" /></button>
+              <button type="button" onClick={handleClose} className="p-2 rounded-full hover:bg-muted transition-colors"><X className="w-5 h-5 sm:w-6 sm:h-6" /></button>
             </div>
 
-            <div className="p-8 max-h-[70vh] overflow-y-auto">
+            <div className="p-5 sm:p-8 max-h-[75vh] sm:max-h-[70vh] overflow-y-auto">
               {!session ? (
                 <form onSubmit={handleAuth} className="space-y-4">
                   <div className="flex bg-muted p-1.5 rounded-2xl">
@@ -270,15 +303,15 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
                     <div className="space-y-8">
                       <div className="space-y-3">
                         <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Fecha</label>
-                        <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} min={today} className="w-full p-5 rounded-3xl bg-muted/50 border border-border text-lg font-medium outline-none focus:ring-2 focus:ring-primary/20" />
+                        <input type="date" value={selectedDate} onChange={e => handleDateChange(e.target.value)} min={today} className="w-full p-5 rounded-3xl bg-muted/50 border border-border text-lg font-medium outline-none focus:ring-2 focus:ring-primary/20" />
                       </div>
                       
                       <div className="space-y-3">
                         <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1">Horarios Disponibles</label>
                         {availableSlots.length > 0 ? (
-                          <div className="grid grid-cols-4 gap-3">
-                            {availableSlots.map(t => (
-                              <button key={t} onClick={() => setSelectedTime(t)} className={`py-4 rounded-2xl text-sm font-bold border transition-all ${selectedTime === t ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-muted/30 border-transparent hover:bg-muted'}`}>{t}</button>
+                           <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                             {availableSlots.map(t => (
+                              <button type="button" key={t} onClick={() => setSelectedTime(t)} className={`py-4 rounded-2xl text-sm font-bold border transition-all ${selectedTime === t ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20' : 'bg-muted/30 border-transparent hover:bg-muted'}`}>{t}</button>
                             ))}
                           </div>
                         ) : (
@@ -291,7 +324,7 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
                       
                       <Button onClick={() => setBookingStep('payment')} disabled={!selectedDate || !selectedTime} className="w-full py-8 rounded-[32px] text-lg font-bold gap-3 shadow-2xl">Siguiente Paso <ArrowRight className="w-5 h-5" /></Button>
                     </div>
-                  ) : (
+                  ) : bookingStep === 'payment' ? (
                     <div className="space-y-8">
                       {/* Selección de Tipo de Pago (Seña vs Completo) */}
                       {service && service.deposit_amount > 0 && service.deposit_amount < service.price && (
@@ -392,6 +425,57 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
                         <Button onClick={handleBooking} disabled={isLoading} className="flex-1 py-8 rounded-[32px] text-lg font-bold shadow-2xl">Confirmar Turno</Button>
                       </div>
                     </div>
+                  ) : (
+                    <div className="space-y-6 text-center py-4 flex flex-col items-center">
+                      <motion.div
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                        className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 mb-2"
+                      >
+                        <CheckCircle2 className="w-10 h-10" />
+                      </motion.div>
+                      
+                      <div className="space-y-2">
+                        <h3 className="text-2xl font-display font-bold text-primary">¡Turno Reservado!</h3>
+                        <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+                          Acabas de agendar tu cita exitosamente. A continuación, tienes los detalles para dirigirte al salón:
+                        </p>
+                      </div>
+
+                      {/* Resumen del turno */}
+                      <div className="w-full bg-muted/40 border border-border rounded-[28px] p-6 text-left space-y-4 shadow-inner">
+                        <div className="flex justify-between items-center pb-3 border-b border-border/50">
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Servicio</span>
+                          <span className="text-sm font-bold text-primary truncate max-w-[200px]">{service?.name}</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center pb-3 border-b border-border/50">
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Día</span>
+                          <span className="text-sm font-bold text-foreground">
+                            {selectedDate ? format(new Date(selectedDate + 'T00:00:00'), 'dd/MM/yyyy') : ""}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center pb-3 border-b border-border/50">
+                          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Hora</span>
+                          <span className="text-sm font-bold text-foreground">{selectedTime} hs</span>
+                        </div>
+
+                        <div className="flex items-start gap-3 pt-1">
+                          <MapPin className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                          <div>
+                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest block mb-0.5">Ubicación</span>
+                            <span className="text-sm font-bold text-foreground">Libertad 844, CABA</span>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">Buenos Aires, Argentina (Zona Recoleta/Retiro)</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button onClick={handleClose} className="w-full py-7 rounded-[24px] text-lg font-bold shadow-xl mt-4">
+                        Entendido
+                      </Button>
+                    </div>
                   )}
                 </div>
               )}
@@ -404,7 +488,7 @@ const BookingModal = ({ service, isOpen, onClose }: BookingModalProps) => {
 };
 
 const PaymentBtn = ({ active, icon, label, onClick }: any) => (
-  <button onClick={onClick} className={`p-5 rounded-3xl border-2 flex flex-col items-center gap-2 transition-all ${active ? 'border-primary bg-primary/5 scale-105 shadow-lg' : 'border-border grayscale'}`}>
+  <button type="button" onClick={onClick} className={`p-5 rounded-3xl border-2 flex flex-col items-center gap-2 transition-all ${active ? 'border-primary bg-primary/5 scale-105 shadow-lg' : 'border-border grayscale'}`}>
     <div className={active ? 'text-primary' : 'text-muted-foreground'}>{icon}</div>
     <span className={`text-[10px] font-bold uppercase ${active ? 'text-primary' : 'text-muted-foreground'}`}>{label}</span>
   </button>
